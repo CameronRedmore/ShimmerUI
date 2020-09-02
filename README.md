@@ -1,4 +1,6 @@
 # Shimmer UI
+![Shimmer UI](https://s.cmzi.uk/1xTjG)
+
 Welcome to Shimmer!
 Shimmer is an attempt at making Moonlight a little bit easier to use. The application was designed for [Fire Power Cloud](https://firepower.cloud), but should work with any system which you can connect to via Moonlight.
 
