@@ -252,10 +252,14 @@ import firepowertext from '@/assets/FirePowerTextWhite.svg';
 
 import GameCard from '@/components/GameCard';
 
-let execFile = require('child_process').execFile;
+const util = require('util');
+
+const exec = util.promisify(require('child_process').exec);
+const execFile = require('child_process').execFile;
 
 const remote = require('electron').remote;
 const window = remote.getCurrentWindow();
+
 
 export default {
   name: 'Home',
@@ -332,7 +336,7 @@ export default {
       config: {
         appName: "Desktop",
         ip: "",
-        moonlightExe: "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe",
+        moonlightExe: "",
         moonlight: {
           "resolution": "1920x1080",
           "video-codec": "auto",
@@ -378,7 +382,6 @@ export default {
       }, 1000),
 
       changeSearch: _.debounce(function(search) {
-        console.log("Called")
         if(!search)
         {
           this.filteredGames = [...this.games];
@@ -481,6 +484,33 @@ export default {
     {
       this.config = JSON.parse(config);
     }
+    if(this.config.moonlightExe == "")
+    {
+      switch(navigator.platform)
+      {
+        case "Win32":
+          this.config.moonlightExe = "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe";
+          break;
+        default:
+          try 
+          {
+            const {stdout} = await exec("which moonlight");
+            if(stdout)
+            {
+              this.config.moonlightExe = stdout;
+            }
+            else
+            {
+              throw new Exception("Executable not found!");
+            }
+          }
+          catch(ex)
+          {
+            console.log(ex);
+          }
+          break;
+      }
+    }
     this.load();
     setInterval(() => {
       this.maximised = this.window.isMaximized();
@@ -528,7 +558,6 @@ export default {
       }
       let height = element.clientHeight;
       this.minHeight = height;
-      console.log(element, height);
     },
     async load() {
       this.loading = true;

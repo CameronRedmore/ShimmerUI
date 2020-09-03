@@ -1,6 +1,7 @@
 {
   "name": "shimmer",
-  "version": "0.1.0",
+  "description": "An alternative interface for Moonlight, designed to make the program easier to use.",
+  "version": "0.2.0",
   "private": true,
   "author": {
     "name": "Cameron Redmore",
@@ -13,7 +14,7 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:generate-icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten",
     "electron:serve": "vue-cli-service electron:serve",
-    "package": "cmd.exe /C \"C:\\Program Files\\Git\\bin\\bash.exe\" package.sh",
+    "package": "./package.sh",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
