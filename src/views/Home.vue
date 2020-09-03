@@ -54,43 +54,16 @@
         </v-btn>
       </v-toolbar-items>
     </v-app-bar>
-    <v-row align="center" justify="center" class="fill-height">
+    <v-row align="center" justify="center" class="fill-height" v-resize="handleResize">
       <v-col cols="8" v-if="filteredGames.length == 0">
-        <v-card class="game" color="error">
+        <v-card color="error">
           <v-card-text class="text-center title">
           No games could be found, please check your filters and search criteria, and ensure you have configured your host IP!
           </v-card-text>
         </v-card>
       </v-col>
       <v-col :cols="Math.floor(12 / config.columns)" v-for="(game) in filteredGames" :key="game.provider + game.id">
-        <v-lazy transition="fade-transition">
-          <v-card class="game" @click="launchGame(game)">
-            <v-img :src="game.poster" :lazy-src="transparent">
-              <template v-slot:placeholder>
-                <v-row
-                  class="fill-height ma-0"
-                  align="center"
-                  justify="center"
-                >
-                  <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
-                </v-row>
-              </template>
-              <div :class="'provider ' + game.provider">
-              <v-icon size="48">
-                {{providerToIcon(game.provider)}}
-              </v-icon>
-              </div>
-              <div class="installed" v-if="game.installed">
-                <v-icon size="48">
-                  mdi-download
-                </v-icon>
-              </div>
-            </v-img>
-            <v-row align="center">
-              <v-col cols="12" class="title text-center text-truncate">{{game.name}}</v-col>
-            </v-row>
-          </v-card>
-        </v-lazy>
+        <game-card :game="game" @launch="launchGame(gameId)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
       </v-col>
     </v-row>
     <v-dialog v-model="settings" max-width="75%" scrollable height="85%" persistent>
@@ -277,6 +250,8 @@ import axios from 'axios';
 import firepowerlogo from '@/assets/FirePowerLogoWhite.svg';
 import firepowertext from '@/assets/FirePowerTextWhite.svg';
 
+import GameCard from '@/components/GameCard';
+
 let execFile = require('child_process').execFile;
 
 const remote = require('electron').remote;
@@ -285,6 +260,7 @@ const window = remote.getCurrentWindow();
 export default {
   name: 'Home',
   components: {
+    GameCard
   },
 
   data: function() {
@@ -302,6 +278,8 @@ export default {
 
       spawnError: false,
       spawnErrorData: "",
+
+      minHeight: 50,
 
       themes: [
         {
@@ -391,6 +369,8 @@ export default {
       
       setConfig: _.debounce(function(value) {
         localStorage.setItem("config", JSON.stringify(value));
+
+        this.handleResize();
       }, 1500),
 
       changeBitrate: _.debounce(function(value) {
@@ -505,6 +485,9 @@ export default {
     setInterval(() => {
       this.maximised = this.window.isMaximized();
     }, 500);
+    setInterval(() => {
+      this.handleResize();
+    }, 5000);
   },
 
   methods: {
@@ -521,6 +504,31 @@ export default {
     },
     minimise() {
       window.minimize();
+    },
+    providerToIcon(provider)
+    {
+      switch(provider)
+      {
+        case "Steam":
+          return "mdi-steam";
+      }
+    },
+    handleResize() {
+      let element = document.querySelector(".game");
+      if(!element)
+      {
+        console.log("Checked game did not exist.");
+        return;
+      }
+      let imageElement = document.querySelector(".game > .v-image");
+      if(!imageElement || imageElement.clientHeight == 0)
+      {
+        console.log("Checked game image not yet loaded.");
+        return;
+      }
+      let height = element.clientHeight;
+      this.minHeight = height;
+      console.log(element, height);
     },
     async load() {
       this.loading = true;
@@ -560,15 +568,6 @@ export default {
         this.error = true;
       }
       this.loading = false;
-    },
-
-    providerToIcon(provider)
-    {
-      switch(provider)
-      {
-        case "Steam":
-          return "mdi-steam";
-      }
     },
 
     async refresh()

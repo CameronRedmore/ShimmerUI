@@ -2,6 +2,11 @@
   "name": "shimmer",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Cameron Redmore",
+    "email": "shimmer@cmzi.uk",
+    "url": "https://github.com/CameronRedmore/ShimmerUI"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
