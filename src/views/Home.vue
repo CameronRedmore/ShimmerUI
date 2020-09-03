@@ -63,7 +63,7 @@
         </v-card>
       </v-col>
       <v-col :cols="Math.floor(12 / config.columns)" v-for="(game) in filteredGames" :key="game.provider + game.id">
-        <game-card :game="game" @launch="launchGame(gameId)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
+        <game-card :game="game" @launch="launchGame(game.id)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
       </v-col>
     </v-row>
     <v-dialog v-model="settings" max-width="75%" scrollable height="85%" persistent>
