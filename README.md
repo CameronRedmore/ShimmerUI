@@ -18,10 +18,10 @@ Please note that the first launch can take a very long time whilst the ShimmerSe
 ## Current Platform Support
 - Windows
 - Linux (x86)
+- macOS
 
 ## Planned Platform Support
 - Linux (ARM)
-- macOS
 
 ## Current Game Provider Support
 - Steam

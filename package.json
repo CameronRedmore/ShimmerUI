@@ -1,7 +1,7 @@
 {
   "name": "shimmer",
   "description": "An alternative interface for Moonlight, designed to make the program easier to use.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "author": {
     "name": "Cameron Redmore",

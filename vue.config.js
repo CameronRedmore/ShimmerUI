@@ -3,7 +3,7 @@ module.exports = {
     "electronBuilder": {
       "nodeIntegration": true,
       "builderOptions": {
-        "productName": "Shimmer - Moonlight Interface"
+        "productName": "Shimmer"
       }
     }
   },
