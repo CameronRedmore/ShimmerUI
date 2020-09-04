@@ -27,6 +27,7 @@ function createWindow() {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       enableRemoteModule: true,
     },
+    titleBarStyle: 'customButtonsOnHover',
     icon: path.join(__static, 'icon.png'),
   })
 

@@ -42,16 +42,19 @@
         <v-btn icon @click="settings = true" title="Settings">
           <v-icon>mdi-settings</v-icon>
         </v-btn>
-        <v-divider vertical inset/>
-        <v-btn icon @click="minimise">
-          <v-icon>mdi-window-minimize</v-icon>
-        </v-btn>
-        <v-btn icon @click="maximise">
-          <v-icon>{{maximised ? 'mdi-window-restore' : 'mdi-window-maximize'}}</v-icon>
-        </v-btn>
-        <v-btn icon @click="close">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <!-- Hide window control buttons on macOS -->
+        <template v-if="platform != 'MacIntel'">
+          <v-divider vertical inset/>
+          <v-btn icon @click="minimise">
+            <v-icon>mdi-window-minimize</v-icon>
+          </v-btn>
+          <v-btn icon @click="maximise">
+            <v-icon>{{maximised ? 'mdi-window-restore' : 'mdi-window-maximize'}}</v-icon>
+          </v-btn>
+          <v-btn icon @click="close">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
       </v-toolbar-items>
     </v-app-bar>
     <v-row align="center" justify="center" class="fill-height" v-resize="handleResize">
