@@ -1,6 +1,6 @@
 <template>
   <v-container fluid style="height: calc(100vh - (64px + 36px)); overflow: auto;">
-    <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag">
+    <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag; border-radius: 500px;">
         <template v-if="config.theme.name == 'FirePowerCloud'">
           <img :src="firepowerlogo" style="height: 32px;"/>
           <img :src="firepowertext" style="height: 16px;" class="pl-2"/>
@@ -244,7 +244,7 @@
 </template>
 
 <script>
-import _ from 'lodash';
+import {debounce} from 'lodash';
 import axios from 'axios';
 
 import firepowerlogo from '@/assets/FirePowerLogoWhite.svg';
@@ -371,17 +371,17 @@ export default {
 
       search: "",
       
-      setConfig: _.debounce(function(value) {
+      setConfig: debounce(function(value) {
         localStorage.setItem("config", JSON.stringify(value));
 
         this.handleResize();
       }, 1500),
 
-      changeBitrate: _.debounce(function(value) {
+      changeBitrate: debounce(function(value) {
         this.config.moonlight.bitrate = value * 1000;
       }, 1000),
 
-      changeSearch: _.debounce(function(search) {
+      changeSearch: debounce(function(search) {
         if(!search)
         {
           this.filteredGames = [...this.games];
@@ -491,6 +491,8 @@ export default {
         case "Win32":
           this.config.moonlightExe = "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe";
           break;
+        case "MacIntel":
+          this.config.moonlightExe = "/Applications/Moonlight.app/Content/MacOS/Moonlight";
         default:
           try 
           {
