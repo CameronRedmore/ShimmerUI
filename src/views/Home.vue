@@ -274,6 +274,8 @@ export default {
     return {
       window,
 
+      platform: navigator.platform,
+
       maximised: false,
 
       firepowerlogo,
