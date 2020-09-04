@@ -1,6 +1,6 @@
 <template>
   <v-container fluid style="height: calc(100vh - (64px + 36px)); overflow: auto;">
-    <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag; border-radius: 500px;">
+    <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag;">
         <template v-if="config.theme.name == 'FirePowerCloud'">
           <img :src="firepowerlogo" style="height: 32px;"/>
           <img :src="firepowertext" style="height: 16px;" class="pl-2"/>
