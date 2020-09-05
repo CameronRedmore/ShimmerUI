@@ -1,6 +1,16 @@
 <template>
   <v-container fluid style="height: calc(100vh - (64px + 36px)); overflow: auto;">
     <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag;">
+        <!-- Show window control buttons on the left for macOS -->
+        <template v-if="platform == 'MacIntel'">
+          <v-btn icon x-small class="windowButton" style="background: #FC4E50; margin-left:-9px;" @click="close">
+          </v-btn>
+          <v-btn icon x-small class="windowButton" style="background: #FFC031; margin-left: 8px;" @click="minimise">
+          </v-btn>
+          <v-btn icon x-small class="windowButton" style="background: #37D343; margin-left: 8px;" @click="maximise">
+          </v-btn>
+          <v-divider vertical inset style="border-color: white" class="mx-2"/>
+        </template>
         <template v-if="config.theme.name == 'FirePowerCloud'">
           <img :src="firepowerlogo" style="height: 32px;"/>
           <img :src="firepowertext" style="height: 16px;" class="pl-2"/>
@@ -66,7 +76,7 @@
         </v-card>
       </v-col>
       <v-col :cols="Math.floor(12 / config.columns)" v-for="(game) in filteredGames" :key="game.provider + game.id">
-        <game-card :game="game" @launch="launchGame(game.id)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
+        <game-card :game="game" @launch="launchGame(game)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
       </v-col>
     </v-row>
     <v-dialog v-model="settings" max-width="75%" scrollable height="85%" persistent>
@@ -497,7 +507,8 @@ export default {
           this.config.moonlightExe = "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe";
           break;
         case "MacIntel":
-          this.config.moonlightExe = "/Applications/Moonlight.app/Content/MacOS/Moonlight";
+          this.config.moonlightExe = "/Applications/Moonlight.app/Contents/MacOS/Moonlight";
+          break;
         default:
           try 
           {
@@ -701,6 +712,12 @@ export default {
   ::-webkit-scrollbar-thumb:active{
     width: 20px;
     background: rgba(255,255,255,0.8);
+  }
+
+  .windowButton {
+    width: 12.5px !important;
+    height: 12.5px !important;
+    border-radius: 100% !important;
   }
 
   .v-application .shimmerText.text-h5 {
