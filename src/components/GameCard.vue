@@ -75,7 +75,7 @@ export default {
             this.$refs.card.$el.style.zIndex = "";
             return;
           }
-          this.$refs.card.$el.style.zIndex = 7;
+          this.$refs.card.$el.style.zIndex = 2;
           let xy = [e.clientX, e.clientY];
 
           let position = xy.concat([this.$refs.lazy.$el]);
