@@ -7,6 +7,10 @@ import '@babel/polyfill'
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
 
+import Notifications from 'vue-notification';
+
+Vue.use(Notifications);
+
 Vue.config.productionTip = false
 
 new Vue({

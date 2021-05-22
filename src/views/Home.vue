@@ -1,65 +1,212 @@
 <template>
-  <v-container fluid style="height: calc(100vh - (64px + 36px)); overflow: auto;">
-    <v-app-bar :color="config.theme.headerColour" app style="-webkit-app-region: drag;">
-        <!-- Show window control buttons on the left for macOS -->
-        <template v-if="platform == 'MacIntel'">
-          <v-btn icon x-small class="windowButton" style="background: #FC4E50; margin-left:-9px;" @click="close">
-          </v-btn>
-          <v-btn icon x-small class="windowButton" style="background: #FFC031; margin-left: 8px;" @click="minimise">
-          </v-btn>
-          <v-btn icon x-small class="windowButton" style="background: #37D343; margin-left: 8px;" @click="maximise">
-          </v-btn>
-          <v-divider vertical inset style="border-color: white" class="mx-2"/>
-        </template>
-        <template v-if="config.theme.name == 'FirePowerCloud'">
-          <img :src="firepowerlogo" style="height: 32px;"/>
-          <img :src="firepowertext" style="height: 16px;" class="pl-2"/>
-          <v-divider vertical inset class="mx-2" style="border-color: white"/>
-          <span class="text-h5 shimmerText">Shimmer</span>
-        </template>
-        <template v-else>
-          <strong class="text-h5 font-weight-bold shimmerText">Shimmer</strong>
-          <v-divider vertical inset class="mx-2" style="border-color: white"/>
-          <span class="text-h5">
-            Moonlight Interface
-          </span>
-        </template>
-      <v-spacer/>
-      <v-toolbar-items style="-webkit-app-region: no-drag;">
-        <v-divider vertical inset/>
-        <v-btn icon @click="launchDesktop" title="Launch Desktop">
-          <v-icon>
-            mdi-monitor
-          </v-icon>
+  <v-container fluid style="height: calc(100vh - (64px + 36px)); overflow: auto">
+    <v-app-bar
+      :color="config.theme.headerColour"
+      app
+      style="-webkit-app-region: drag"
+      clipped-right
+    >
+      <!-- Show window control buttons on the left for macOS -->
+      <template v-if="platform == 'MacIntel'">
+        <v-btn
+          icon
+          x-small
+          class="windowButton"
+          style="background: #fc4e50; margin-left: -9px"
+          @click="close"
+        >
         </v-btn>
-        <v-divider vertical inset/>
+        <v-btn
+          icon
+          x-small
+          class="windowButton"
+          style="background: #ffc031; margin-left: 8px"
+          @click="minimise"
+        >
+        </v-btn>
+        <v-btn
+          icon
+          x-small
+          class="windowButton"
+          style="background: #37d343; margin-left: 8px"
+          @click="maximise"
+        >
+        </v-btn>
+        <v-divider vertical inset style="border-color: white" class="mx-2" />
+      </template>
+      <template v-if="config.theme.name == 'FirePowerCloud'">
+        <img :src="firepowerlogo" style="height: 32px" />
+        <img :src="firepowertext" style="height: 16px" class="pl-2" />
+        <v-divider vertical inset class="mx-2" style="border-color: white" />
+        <span class="text-h5 shimmerText">Shimmer</span>
+      </template>
+      <template v-else-if="config.theme.name == 'Maximum Settings'">
+        <img
+          :src="mxslogo"
+          style="height: 32px; filter: drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.5))"
+        />
+        <img :src="mxstext" style="height: 28px; filter: saturate(150%)" class="pl-4" />
+        <v-divider vertical inset class="mx-2" style="border-color: white" />
+        <span class="text-h5 shimmerText">Shimmer</span>
+      </template>
+      <template v-else-if="config.theme.name == 'Maximum Settings Alt'">
+        <img :src="mxslogo" style="height: 32px" />
+        <img :src="mxstextalt" style="height: 28px" class="pl-4" />
+        <v-divider vertical inset class="mx-2" style="border-color: #444" />
+        <span class="text-h5 shimmerText">Shimmer</span>
+      </template>
+      <template v-else>
+        <strong class="text-h5 font-weight-bold shimmerText">Shimmer</strong>
+        <v-divider vertical inset class="mx-2" style="border-color: white" />
+        <span class="text-h5"> Moonlight Interface </span>
+      </template>
+      <v-spacer />
+      <v-toolbar-items style="-webkit-app-region: no-drag">
+        <v-divider vertical inset />
+        <v-btn icon @click="launchDesktop" title="Launch Desktop">
+          <v-icon> mdi-monitor </v-icon>
+        </v-btn>
+        <v-btn icon @click="launchPlaynite" title="Launch Playnite">
+          <v-icon> mdi-gamepad-variant </v-icon>
+        </v-btn>
+        <v-divider vertical inset />
         <v-menu bottom :close-on-content-click="false">
-          <template v-slot:activator={on}>
+          <template v-slot:activator="{ on }">
             <v-btn icon v-on="on" title="Search">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </template>
           <v-card>
             <v-card-text>
-              <v-text-field type="search" placeholder="Search" prepend-icon="mdi-magnify" v-model="search"></v-text-field>
+              <v-text-field
+                type="search"
+                placeholder="Search"
+                prepend-icon="mdi-magnify"
+                v-model="search"
+              ></v-text-field>
             </v-card-text>
           </v-card>
         </v-menu>
+        <v-menu bottom :close-on-content-click="false">
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" title="Filter">
+              <v-icon>mdi-filter</v-icon>
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-text>
+              <span class="title"> Platform Filters </span>
+              <v-list>
+                <v-list-item v-for="innerFilter in filters" :key="innerFilter">
+                  <v-list-item-content>
+                    {{ innerFilter }}
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-checkbox v-model="filter" :value="innerFilter"></v-checkbox>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+        </v-menu>
+        <v-divider vertical inset />
+        <v-btn icon @click="toggleMic" title="Toggle Mic Forwarding">
+          <v-badge color="red" dot :value="micEnabled">
+            <v-icon>mdi-microphone</v-icon>
+          </v-badge>
+        </v-btn>
+        <v-divider vertical inset />
         <v-btn icon @click="refresh" title="Refresh Games List">
           <v-icon>mdi-refresh</v-icon>
         </v-btn>
-        <v-divider vertical inset/>
-        <v-btn icon @click="settings = true" title="Settings">
+        <v-divider vertical inset />
+        <!-- <v-btn icon @click="config.darkMode = !config.darkMode" title="Dark Mode Toggle">
+          <v-icon>{{config.darkMode ? 'mdi-moon-waxing-crescent' : 'mdi-white-balance-sunny'}}</v-icon>
+        </v-btn> -->
+        <v-btn icon @click="$refs.settings.showSettings()" title="Settings">
           <v-icon>mdi-settings</v-icon>
+        </v-btn>
+        <v-divider vertical inset />
+        <v-btn
+          icon
+          @click="config.showInfo = !config.showInfo"
+          title="Toggle Information"
+        >
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+        <v-divider vertical inset/>
+        <v-menu bottom :close-on-content-click="true" v-if="mxs">
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on" title="Power Options" :class="powerStatus">
+              <v-icon>mdi-power</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item>
+              <span class="title">
+                Power Options
+              </span>
+            </v-list-item>
+            <v-list-item @click="powerOn">
+              <v-list-item-icon>
+                <v-icon>mdi-power</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>
+                  Start
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item @click="powerRestart">
+              <v-list-item-icon>
+                <v-icon>mdi-restart</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>
+                  Restart
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item @click="powerOff">
+              <v-list-item-icon>
+                <v-icon>mdi-power-off</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>
+                  Shutdown
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item @click="powerKill">
+              <v-list-item-icon>
+                <v-icon>mdi-skull</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>
+                  Force Shutdown
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-btn
+          icon
+          @click="openPanel"
+          title="Open Panel"
+          v-if="mxs"
+        >
+          <v-icon>mdi-monitor-dashboard</v-icon>
         </v-btn>
         <!-- Hide window control buttons on macOS -->
         <template v-if="platform != 'MacIntel'">
-          <v-divider vertical inset/>
+          <v-divider vertical inset />
           <v-btn icon @click="minimise">
             <v-icon>mdi-window-minimize</v-icon>
           </v-btn>
           <v-btn icon @click="maximise">
-            <v-icon>{{maximised ? 'mdi-window-restore' : 'mdi-window-maximize'}}</v-icon>
+            <v-icon>{{
+              maximised ? "mdi-window-restore" : "mdi-window-maximize"
+            }}</v-icon>
           </v-btn>
           <v-btn icon @click="close">
             <v-icon>mdi-close</v-icon>
@@ -67,220 +214,264 @@
         </template>
       </v-toolbar-items>
     </v-app-bar>
-    <v-row align="center" justify="center" class="fill-height" v-resize="handleResize">
+    <v-navigation-drawer
+      app
+      clipped
+      :color="config.darkMode ? 'grey darken-4' : ''"
+      right
+      :value="config.showInfo && selected != -1 && currentGame.Name && currentGame.Description"
+      :width="config.infoWidth || 300"
+    >
+      <v-layout column>
+        <v-col>
+          <span class="display-2">{{ currentGame.Name }}</span>
+        </v-col>
+        <v-col v-html="currentGame.Description" class="description"> </v-col>
+      </v-layout>
+    </v-navigation-drawer>
+    <v-container v-if="error">
+      <v-row align="center" justify="center" class="fill-height">
+        <v-card>
+          <v-toolbar color="secondary">
+            <v-toolbar-title> Data Server Communication Failure </v-toolbar-title>
+            <v-spacer />
+          </v-toolbar>
+          <v-card-text v-if="config.ip" class="title pt-4 text-center">
+            There was an issue connecting to the remote data server. Please ensure you have
+            set the correct IP address in the settings, and have installed the latest
+            version of the data server on your NVIDIA GameStream host (<em>NOT</em> this
+            machine).<br />
+            Also ensure that you have set the correct communication password. This can be
+            found inside the ".env" file next to your ShimmerServer.exe file.
+            <template v-if="config.mxs.username">
+              <br/><br/>
+              Since you have entered your Maximum Settings credentials, you can attempt to start your machine from within Shimmer.
+              Please press the power button in the top right and we will automatically try to reconnect.
+            </template>
+          </v-card-text>
+          <v-card-text v-else class="title pt-4 text-center">
+            It appears this is either your first run of the program, or you have removed the
+            IP address from the settings menu. Close this dialogue to open the settings menu
+            to configure the application.
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer/>
+            <v-btn :color="config.theme.primaryColour || config.theme.headerColour" @click="$refs.settings.showSettings()">
+              Open Settings
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-row>
+    </v-container>
+    <v-row align="center" justify="center" class="fill-height" v-resize="handleResize" v-else>
       <v-col cols="8" v-if="filteredGames.length == 0">
         <v-card color="error">
           <v-card-text class="text-center title">
-          No games could be found, please check your filters and search criteria, and ensure you have configured your host IP!
+            No games could be found, please check your filters and search criteria, and
+            ensure you have configured your host IP!
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col :cols="Math.floor(12 / config.columns)" v-for="(game) in filteredGames" :key="game.provider + game.id">
-        <game-card :game="game" @launch="launchGame(game)" :transparent="transparent" :minHeight="minHeight" :providerToIcon="providerToIcon"></game-card>
+      <v-col
+        :cols="Math.floor(12 / config.columns)"
+        v-for="(game, i) in filteredGames"
+        :key="game.provider + game.Id"
+      >
+        <game-card
+          :ref="'game-' + i"
+          :selected="selected == i"
+          :game="game"
+          @launchGame="launchGame(game)"
+          @info="
+            config.showInfo = true;
+            setSelected(i);
+          "
+          :primaryColour="config.theme.primaryColour || config.theme.headerColour"
+          :transparent="transparent"
+          :minHeight="minHeight"
+          :providerToIcon="providerToIcon"
+        ></game-card>
       </v-col>
     </v-row>
-    <v-dialog v-model="settings" max-width="75%" scrollable height="85%" persistent>
+    <settings :value="config" ref="settings" @closed="load"></settings>
+    <!-- <v-dialog v-model="error" max-width="50%" persistent>
+    </v-dialog> -->
+    <v-dialog v-model="micError" max-width="50%" persistent>
       <v-card>
         <v-toolbar color="secondary">
-          <v-toolbar-title>
-            Settings
-          </v-toolbar-title>
-          <v-spacer/>
+          <v-toolbar-title> Microphone Error </v-toolbar-title>
+          <v-spacer />
           <v-toolbar-items>
-            <v-btn icon @click="settings = false; load()">
+            <v-btn icon @click="micError = false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" class="py-0">
-              <v-subheader class="pa-0">UI Configuration</v-subheader>
-              <v-divider/>
-            </v-col>
-            <v-col cols="12">
-              <v-select outlined hide-details v-model="config.columns" label="Grid Columns" :items="[1, 2, 3, 4, 6, 12]"></v-select>
-            </v-col>
-            <v-col cols="12">
-              <v-select outlined hide-details v-model="config.theme" label="Theme" :items="themes" return-object item-key="name" item-text="name"></v-select>
-            </v-col>
-            <v-col cols="12" class="py-0">
-              <v-subheader class="pa-0">Primary Configuration</v-subheader>
-              <v-divider/>
-            </v-col>
-            <v-col cols="12" class="py-0">
-              <v-row>
-                <v-col cols="6">
-                  <v-text-field outlined hide-details v-model="config.ip" label="Machine IP"></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field outlined hide-details v-model="config.appName" label="Desktop App Name"></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field outlined hide-details v-model="config.moonlightExe" label="Moonlight Executable Location"></v-text-field>
-                </v-col>
-                <v-col cols="6" class="py-0">
-                  <v-subheader class="pa-0">Display Options</v-subheader>
-                  <v-divider/>
-                </v-col>
-                <v-col cols="6" class="py-0">
-                  <v-subheader class="pa-0">Audio Options</v-subheader>
-                  <v-divider/>
-                </v-col>
-                <v-col cols="6">
-                  <v-row>
-                    <v-col cols="3" class="pt-0">
-                      <v-text-field type="number" label="Width" outlined hide-details v-model="resolutionX"></v-text-field>
-                    </v-col>
-                    <v-col cols="3" class="pt-0">
-                      <v-text-field type="number" label="Height" outlined hide-details v-model="resolutionY"></v-text-field>
-                    </v-col>
-                    <v-col cols="3" class="pt-0">
-                      <v-text-field type="number" label="FPS" outlined hide-details v-model="config.moonlight.fps"></v-text-field>
-                    </v-col>
-                    <v-col cols="3" class="pt-0">
-                      <v-select hide-details outlined label="Display Mode" :items="[{value: 'fullscreen', text: 'Fullscreen'}, {value: 'borderless', text: 'Borderless'}, {value: 'windowed', text: 'Windowed'}]" v-model="config.moonlight['display-mode']"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="">
-                      <v-select outlined hide-details label="Video Codec" v-model="config.moonlight['video-codec']" :items="[{value: 'auto', text: 'Auto'}, {value: 'H.264', text: 'H264'}, {value: 'HEVC', text: 'H265 (HEVC)'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="">
-                      <v-select outlined hide-details label="Video Decoder" v-model="config.moonlight['video-decoder']" :items="[{value: 'auto', text: 'Auto'}, {value: 'software', text: 'Software (Not Recommended)'}, {value: 'hardware', text: 'Hardware'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="">
-                      <v-select label="V-Sync" outlined hide-details v-model="config.moonlight['vsync']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="">
-                      <v-select label="Frame Pacing" outlined hide-details v-model="config.moonlight['frame-pacing']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                    <v-col cols="8">
-                      <v-slider class="pt-3" hide-details v-model="bitrate" label="Bitrate (Mbps)" min="5" max="100" thumb-label></v-slider>
-                    </v-col>
-                    <v-col cols="4">
-                      <v-text-field hide-details outlined type="number" v-model="bitrate" min="5" max="100" label="Bitrate (Mbps)"></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-col cols="6">
-                  <v-row>
-                    <v-col cols="8" class="py-0">
-                      <v-select outlined hide-details label="Audio Configuration" v-model="config.moonlight['audio-config']" :items="[{value: 'stereo', text: 'Stereo'}, {value: '5.1-surround', text: '5.1 Surround Sound'}, {value: '7.1-surround', text: '7.1 Surround Sound'}]"></v-select>
-                    </v-col>
-                    <v-col cols="4" class="py-0">
-                      <v-select outlined hide-details label="Host Audio" v-model="config.moonlight['audio-on-host']" :items="[{value: false, text: 'Do Not Play Audio'}, {value: true, text: 'Play Audio On Host'}]"></v-select>
-                    </v-col>
-                  </v-row>
-                </v-col>
-                <v-col cols="12" class="py-0">
-                  <v-subheader class="pa-0">Miscellanous Flags</v-subheader>
-                  <v-divider/>
-                </v-col>
-                <v-col cols="12">
-                  <v-row>
-                    <v-col cols="3" class="py-0">
-                      <v-select label="Absolute Mouse" outlined hide-details v-model="config.moonlight['absolute-mouse']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="py-0">
-                      <v-select label="Touchscreen Trackpad" outlined hide-details v-model="config.moonlight['touchscreen-trackpad']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="py-0">
-                      <v-select label="Multi Controller" outlined hide-details v-model="config.moonlight['multi-controller']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                    <v-col cols="3" class="py-0">
-                      <v-select label="Quit on Exit" outlined hide-details v-model="config.moonlight['quit-after']" :items="[{value: false, text: 'Disabled'}, {value: true, text: 'Enabled'}]"></v-select>
-                    </v-col>
-                  </v-row>
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="error" max-width="50%" persistent>
-      <v-card>
-        <v-toolbar color="secondary">
-          <v-toolbar-title>
-            Data Server Communication Failure
-          </v-toolbar-title>
-          <v-spacer/>
-          <v-toolbar-items>
-            <v-btn icon @click="error = false; settings = true;">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-card-text v-if="config.ip" class="title pt-4 text-center">
-          There was an issue connecting to the remote data server. Please ensure you have set the correct IP address in the settings,
-          and have installed the latest version of the data server on your NVIDIA GameStream host (<em>NOT</em> this machine).
-        </v-card-text>
-        <v-card-text v-else class="title pt-4 text-center">
-          It appears this is either your first run of the program, or you have removed the IP address from the settings menu. Close this dialogue to open the settings menu to configure the application.
+        <v-card-text class="title pt-4 text-center">
+          There was an issue forwarding your microphone. Mic forwarding has now been
+          disabled.<br />
+          Please check your network connection, firewall settings, port forwarding and
+          client settings and try again.<br />
+          {{ micError }}
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-dialog v-model="spawnError" max-width="50%" persistent>
       <v-card>
         <v-toolbar color="secondary">
-          <v-toolbar-title>
-            Moonlight Error
-          </v-toolbar-title>
-          <v-spacer/>
+          <v-toolbar-title> Moonlight Error </v-toolbar-title>
+          <v-spacer />
           <v-toolbar-items>
-            <v-btn icon @click="spawnError = false; settings = true;">
+            <v-btn
+              icon
+              @click="
+                spawnError = false;
+                $refs.settings.showSettings();
+              "
+            >
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card-text class="title pt-4 text-center">
-          There was an issue creating the Moonlight instance. Please ensure all of your settings are correct, that you have set the correct Moonlight executable location, and that Moonlight is installed on this computer.<br/>
-          If you are unable to figure out the issue, please create an issue on our GitHub page, and cite the following error:<br/>
-          <pre style="max-height: 4em; width: 100%; background: black; border: 1px solid grey; padding: 5px; overflow: auto; border-radius: 4px;">{{spawnErrorData}}</pre>
+          There was an issue creating the Moonlight instance. Please ensure all of your
+          settings are correct, that you have set the correct Moonlight executable
+          location, and that Moonlight is installed on this computer.<br />
+          If you are unable to figure out the issue, please create an issue on our GitHub
+          page, and cite the following error:<br />
+          <pre
+            style="
+              max-height: 4em;
+              width: 100%;
+              background: black;
+              border: 1px solid grey;
+              padding: 5px;
+              overflow: auto;
+              border-radius: 4px;
+            "
+            >{{ spawnErrorData }}</pre
+          >
         </v-card-text>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="confirm" persistent width="60%">
+      <v-card>
+        <v-card-title>
+          Please Confirm
+        </v-card-title>
+        <v-card-text>
+          {{confirmText}}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="primary" @click="confirmResolve(true); confirm = false">Confirm</v-btn>
+          <v-btn color="secondary" @click="confirmResolve(false); confirm = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-overlay :value="loading" opacity="0.9" class="text-center">
-      <span class="display-1">Loading Games</span><br/>
-      <span class="title">This can take a while, especially on first run! Please give this a good 5/10 minutes to run on the first startup whilst the game server caches your game lists.</span><br/>
-      <v-progress-circular indeterminate color="primary" size="128" width="12"></v-progress-circular>
+      <span class="display-1">Loading Games</span><br />
+      <span class="title"
+        >This can take a while, especially on first run! Please give this a good 5/10
+        minutes to run on the first startup whilst the game server caches your game
+        lists.</span
+      ><br />
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="128"
+        width="12"
+      ></v-progress-circular>
     </v-overlay>
-    <v-footer app :color="config.theme.footerColour">
-      <v-spacer/>
+    <v-footer app :color="config.theme.footerColour" style="v-index: 1000">
+      <template v-if="status.status == 'running'">
+        <span>IP: {{status.ip}}</span><v-divider vertical class="mx-2" style="border-color: white;"/>
+        <span>CPU: {{status.cpu}}</span><v-divider vertical class="mx-2" style="border-color: white;"/>
+        <span>RAM: {{status.memory_usage}}</span><v-divider vertical class="mx-2" style="border-color: white;"/>
+        <span>Auto-Shutdown In {{status.remaining_time}}
+          <v-menu>
+            <template v-slot:activator="{on}">
+              <v-btn rounded color="white" outlined v-on="on">Snooze</v-btn>
+            </template>
+            <v-list>
+              <v-list-item>
+                <span class="title">
+                  Snooze Options
+                </span>
+              </v-list-item>
+              <v-list-item @click='snooze(10)'>
+                <v-list-item-content>
+                  10 Minutes
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click='snooze(30)'>
+                <v-list-item-content>
+                  30 Minutes
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click='snooze(60)'>
+                <v-list-item-content>
+                  60 Minutes
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </span>
+      </template>
+      <v-spacer />
       <template v-if="games.length == filteredGames.length">
-        Showing {{games.length}} Games From {{filteredPlatforms.length}} Platform{{filteredPlatforms.length != 1 ? 's' : ''}}
+        Showing {{ games.length }} Games From {{ filter.length }} Platform{{
+          filter.length != 1 ? "s" : ""
+        }}
       </template>
       <template v-else>
-        Showing {{filteredGames.length}} / {{games.length}} Games From {{platforms.length}} Platform{{platforms.length != 1 ? 's' : ''}} (Filtered)
+        Showing {{ filteredGames.length }} / {{ games.length }} Games From
+        {{ platforms.length }} Platform{{ platforms.length != 1 ? "s" : "" }} (Filtered)
       </template>
     </v-footer>
   </v-container>
 </template>
 
 <script>
-import {debounce} from 'lodash';
-import axios from 'axios';
+import { debounce, throttle } from "lodash";
+import axios from "axios";
+import {v4 as uuid} from 'uuid';
 
-import firepowerlogo from '@/assets/FirePowerLogoWhite.svg';
-import firepowertext from '@/assets/FirePowerTextWhite.svg';
+import firepowerlogo from "@/assets/FirePowerLogoWhite.svg";
+import firepowertext from "@/assets/FirePowerTextWhite.svg";
+import mxslogo from "@/assets/Maximum_Settings_Logo.png";
+import mxstext from "@/assets/Maximum_Settings_Text.png";
+import mxstextalt from "@/assets/Maximum_Settings_Text_Alt.png";
 
-import GameCard from '@/components/GameCard';
+import qs from 'qs';
 
-const util = require('util');
+import GameCard from "@/components/GameCard";
+import Settings from "@/components/Settings";
 
-const exec = util.promisify(require('child_process').exec);
-const execFile = require('child_process').execFile;
+import Gamepads from "gamepads";
 
-const remote = require('electron').remote;
+const StandardMapping = Gamepads.StandardMapping;
+
+const util = require("util");
+const naudiodon = require("naudiodon");
+
+const exec = util.promisify(require("child_process").exec);
+const execFile = require("child_process").execFile;
+
+const remote = require("electron").remote;
+const { ipcRenderer } = require("electron");
 const window = remote.getCurrentWindow();
 
+const storage = require("electron-json-storage");
 
 export default {
-  name: 'Home',
+  name: "Home",
   components: {
-    GameCard
+    GameCard,
+    Settings,
   },
 
-  data: function() {
+  data: function () {
     return {
       window,
 
@@ -291,76 +482,37 @@ export default {
       firepowerlogo,
       firepowertext,
 
+      mxslogo,
+      mxstext,
+      mxstextalt,
+
       loading: false,
 
       error: false,
 
+      micError: false,
+
       spawnError: false,
       spawnErrorData: "",
 
-      minHeight: 50,
+      footerHover: false,
 
-      themes: [
-        {
-          name: "Purple",
-          headerColour: "purple",
-          footerColour: "dark",
-        },
-        {
-          name: "Pink",
-          headerColour: "pink",
-          footerColour: "dark",
-        },
-        {
-          name: "Red",
-          headerColour: "red",
-          footerColour: "dark",
-        },
-        {
-          name: "Orange",
-          headerColour: "orange",
-          footerColour: "dark",
-        },
-        {
-          name: "Yellow",
-          headerColour: "yellow",
-          footerColour: "dark",
-        },
-        {
-          name: "Green",
-          headerColour: "green",
-          footerColour: "dark",
-        },
-        {
-          name: "Blue",
-          headerColour: "primary",
-          footerColour: "dark",
-        },
-        {
-          name: "Indigo",
-          headerColour: "indigo",
-          footerColour: "dark",
-        },
-        {
-          name: "FirePowerCloud",
-          headerColour: "#009B72",
-          footerColour: "#009B72",
-        }
-      ],
+      minHeight: 50,
 
       config: {
         appName: "Desktop",
         ip: "",
         moonlightExe: "",
         moonlight: {
-          "resolution": "1920x1080",
+          resolution: "1920x1080",
           "video-codec": "auto",
           "video-decoder": "auto",
           "display-mode": "fullscreen",
           "audio-config": "stereo",
-          "fps": "60",
-          "bitrate": 25000,
-          "vsync": false,
+          "capture-system-keys": "fullscreen",
+          fps: "60",
+          bitrate: 25000,
+          vsync: false,
           "quit-after": true,
           "multi-controller": false,
           "absolute-mouse": false,
@@ -374,52 +526,121 @@ export default {
         columns: 4,
 
         theme: {
-          name: "FirePowerCloud",
-          headerColour: "#009B72",
-          footerColour: "#009B72",
-        }
+          name: "Maximum Settings",
+          headerColour: "#008BD2",
+          primaryColour: "#008BD2",
+          footerColour: "#008BD2",
+        },
+
+        mxs: {
+          username: "",
+          password: "",
+          vid: "",
+        },
+
+        chosenMic: -1,
+
+        infoWidth: 350,
+
+        playniteMode: "desktop",
       },
 
+      selected: -1,
+      currentGame: {},
+      controllerConnected: false,
+
+      micEnabled: false,
+      micInput: null,
+      micStream: null,
+      micChunker: null,
+      micSocket: null,
+
+      frameCounter: 0,
+
       settings: false,
+
+      filter: [],
+      filters: [],
+
       games: [],
       filteredGames: [],
 
       search: "",
-      
-      setConfig: debounce(function(value) {
-        localStorage.setItem("config", JSON.stringify(value));
+
+      status: {},
+
+      confirm: false,
+      confirmText: "",
+      confirmResolve: () => {},
+
+      changeSelected: throttle(function (value) {
+        console.log("Changing selected by " + value);
+        this.selected = Math.min(
+          Math.max(0, this.selected + value),
+          this.games.length - 1
+        );
+      }, 100),
+
+      setSelected: function (value) {
+        this.selected = value;
+      },
+
+      setConfig: debounce(async function (value) {
+        console.log("Setting value");
+        if (!value || !value.theme || !value.theme.name) {
+          value = { theme: { name: "NA" } };
+        }
+        if(!value.darkMode)
+        {
+          value.darkMode = true;
+        }
+        this.$vuetify.theme.dark = value.darkMode;
+        console.log(
+          "Changing class to " + value.theme.name.toLowerCase().replace(/ /g, "")
+        );
+        document.body.className = value.theme.name.toLowerCase().replace(/ /g, "");
+        console.log("Setting config.");
+        ipcRenderer.send("saveConfig", value);
+
+        axios.defaults.headers.common["Authorization"] = value.authorization;
 
         this.handleResize();
       }, 1500),
 
-      changeBitrate: debounce(function(value) {
+      changeBitrate: debounce(function (value) {
         this.config.moonlight.bitrate = value * 1000;
       }, 1000),
 
-      changeSearch: debounce(function(search) {
-        if(!search)
-        {
-          this.filteredGames = [...this.games];
+      changeSearch: debounce(function (search) {
+        this.handleFilterChange();
+      }, 1000),
+
+      handleFilterChange: debounce(function () {
+        let search = this.search;
+        let filter = this.filter;
+        if (!search) {
+          this.filteredGames = [...this.games].filter((item) => {
+            return filter.includes(item.provider);
+          });
           this.filteredGames.sort((a, b) => {
             let aName = a.search;
             let bName = b.search;
 
-            if(aName < bName)
-            {
+            if (aName < bName) {
               return -1;
             }
-            if(bName < aName)
-            {
+            if (bName < aName) {
               return 1;
             }
             return 0;
           });
-        }
-        else
-        {
+        } else {
           let searchQuery = search.toLowerCase().replace(/\W/g, "");
           let regex = new RegExp(searchQuery, "g");
           this.filteredGames = [...this.games].filter((value) => {
+            if (!filter.includes(value.provider)) {
+              return false;
+            }
             let result = regex.test(value.search);
             return result;
           });
@@ -427,20 +648,20 @@ export default {
             let aName = a.search;
             let bName = b.search;
 
-            if(aName < bName)
-            {
+            if (aName < bName) {
               return -1;
             }
-            if(bName < aName)
-            {
+            if (bName < aName) {
               return 1;
             }
             return 0;
           });
         }
+        this.$forceUpdate();
       }, 1000),
 
-      transparent: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcwAAADXCAMAAACgY5FYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURQAAAAAAAKVnuc8AAAACdFJOU/8A5bcwSgAAAAlwSFlzAAAOwwAADsMBx2+oZAAAAeFJREFUeF7t0QENAAAMw6DPv+n7IMUCtzDKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZjO0BklSCZJZXPFQAAAAASUVORK5CYII="
+      transparent:
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcwAAADXCAMAAACgY5FYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURQAAAAAAAKVnuc8AAAACdFJOU/8A5bcwSgAAAAlwSFlzAAAOwwAADsMBx2+oZAAAAeFJREFUeF7t0QENAAAMw6DPv+n7IMUCtzDKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZkDIhZULKhJQJKRNSJqRMSJmQMiFlQsqElAkpE1ImpExImZAyIWVCyoSUCSkTUiakTEiZjO0BklSCZJZXPFQAAAAASUVORK5CYII=",
     };
   },
 
@@ -448,82 +669,76 @@ export default {
     platforms() {
       let platforms = [];
       this.games.forEach((item) => {
-        if(!platforms.includes(item.provider))
-        {
+        if (!platforms.includes(item.provider)) {
           platforms.push(item.provider);
         }
       });
 
       return platforms;
     },
-    filteredPlatforms() {
-      let platforms = [];
-      this.filteredGames.forEach((item) => {
-        if(!platforms.includes(item.provider))
-        {
-          platforms.push(item.provider);
-        }
-      });
 
-      return platforms;
-    },
-    bitrate: {
-      get() {
-        return this.config.moonlight.bitrate / 1000;
-      },
-      set(value) {
-        this.changeBitrate(value);
+    powerStatus() {
+      let status = this.status;
+
+      switch(status.status)
+      {
+        case "stopped":
+          return "red";
+        case "running":
+          return "green";
+        default:
+          return "red";
       }
     },
-    resolutionX: {
-      get() {
-        return this.config.moonlight.resolution.split("x")[0];
-      },
-      set(value) {
-        this.config.moonlight.resolution = value + "x" + this.config.moonlight.resolution.split("x")[1];
-      }
-    },
-    resolutionY: {
-      get() {
-        return this.config.moonlight.resolution.split("x")[1];
-      },
-      set(value) {
-        this.config.moonlight.resolution = this.config.moonlight.resolution.split("x")[0] + "x" + value;
-      }
+    
+    mxs() {
+      return this.config.mxs && this.config.mxs.username && this.config.mxs.password;
     }
   },
 
   async mounted() {
-    let config = localStorage.getItem("config");
-    if(config)
-    {
-      this.config = JSON.parse(config);
+    console.log(storage.getDefaultDataPath());
+    ipcRenderer.on("micError", (event, data) => {
+      this.micError = data;
+    });
+
+    Gamepads.start();
+    Gamepads.addEventListener("connect", (e) => {
+      this.handleConnect(e);
+    });
+
+    Gamepads.addEventListener("disconnect", (e) => {
+      this.handleDisconnect(e);
+    });
+    let config = storage.getSync("config");
+    console.log(config);
+    if (config && config.moonlight.resolution) {
+      this.config = config;
+      document.body.className = config.theme.name.toLowerCase().replace(/ /g, "");
+
+      console.log(this.config);
+
+      axios.defaults.headers.common["Authorization"] = this.config.authorization;
     }
-    if(this.config.moonlightExe == "")
-    {
-      switch(navigator.platform)
-      {
+    if (this.config.moonlightExe == "") {
+      switch (navigator.platform) {
         case "Win32":
-          this.config.moonlightExe = "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe";
+          this.config.moonlightExe =
+            "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe";
           break;
         case "MacIntel":
-          this.config.moonlightExe = "/Applications/Moonlight.app/Contents/MacOS/Moonlight";
+          this.config.moonlightExe =
+            "/Applications/Moonlight.app/Contents/MacOS/Moonlight";
           break;
         default:
-          try 
-          {
-            const {stdout} = await exec("which moonlight");
-            if(stdout)
-            {
+          try {
+            const { stdout } = await exec("which moonlight");
+            if (stdout) {
               this.config.moonlightExe = stdout;
-            }
-            else
-            {
+            } else {
               throw new Exception("Executable not found!");
             }
-          }
-          catch(ex)
-          {
+          } catch (ex) {
             console.log(ex);
           }
           break;
@@ -536,9 +751,39 @@ export default {
     setInterval(() => {
       this.handleResize();
     }, 5000);
+
+    setInterval(() => {
+      ipcRenderer.send('getStatus');
+      ipcRenderer.once('sendStatus', (event, data) => {
+        this.status = data;
+        console.log(data);
+      });
+    }, 1000);
+    ipcRenderer.send('getStatus');
+    ipcRenderer.once('sendStatus', (event, data) => {
+      this.status = data;
+      console.log(data);
+    });
+
+    ipcRenderer.on('notLoggedIn', (event, data) => {
+      if(this.mxs)
+      {
+        this.$notify({group: 'global', type: 'error', title: 'Not Logged In', text: 'You are not logged in to Maxmimum Settings. Please ensure you have entered your username and password correctly in the settings.'});
+      }
+    });
   },
 
   methods: {
+    $confirm(text) {
+      return new Promise((resolve, reject) => {
+        this.confirmResolve = resolve;
+        this.confirmText = text;
+        this.confirm = true;
+      });
+    },
+    openPanel() {
+      this.$router.push('/panel');
+    },
     close() {
       window.close();
     },
@@ -553,24 +798,52 @@ export default {
     minimise() {
       window.minimize();
     },
-    providerToIcon(provider)
-    {
-      switch(provider)
-      {
+    providerToIcon(provider) {
+      switch (provider) {
         case "Steam":
           return "mdi-steam";
+        case "Origin":
+          return "mdi-origin";
+        case "Ubisoft Connect":
+        case "Uplay":
+          return "mdi-ubisoft";
+        case "GOG":
+          return "mdi-gog";
+        case "Xbox":
+          return "mdi-xbox";
+        case "Nintendo Game Boy":
+        case "Nintendo Game Boy Color":
+        case "Nintendo Game Boy Advance":
+          return "mdi-nintendo-gameboy";
+        case "Nintendo Wii U":
+          return "mdi-nintendo-wiiu";
+        case "Nintendo Wii":
+          return "mdi-nintendo-wii";
+        case "Nintendo Switch":
+          return "mdi-nintendo-switch";
+        case "Nintendo Entertainment System":
+        case "Super Nintendo Entertainment System":
+          return "mdi-gamepad-square";
+        case "Sony PlayStation":
+        case "Sony PlayStation 2":
+        case "Sony PlayStation 3":
+        case "Sony PlayStation 4":
+        case "Sony PSP":
+          return "mdi-sony-playstation";
+        case "Nintendo GameCube":
+          return "mdi-google-controller";
+        default:
+          return "mdi-monitor";
       }
     },
     handleResize() {
       let element = document.querySelector(".game");
-      if(!element)
-      {
+      if (!element) {
         console.log("Checked game did not exist.");
         return;
       }
       let imageElement = document.querySelector(".game > .v-image");
-      if(!imageElement || imageElement.clientHeight == 0)
-      {
+      if (!imageElement || imageElement.clientHeight == 0) {
         console.log("Checked game image not yet loaded.");
         return;
       }
@@ -578,12 +851,14 @@ export default {
       this.minHeight = height;
     },
     async load() {
+      axios.defaults.timeout = 2500;
+      axios.defaults.headers.common["Authorization"] = this.config.authorization;
       this.loading = true;
-      try
-      {
-        let response = await axios.get(`http://${this.config.ip}:2606/games`);
-        if(response.status != 200)
-        {
+      try {
+        let authenticate = await axios.get(`http://${this.config.ip}:2606/authenticate`, {timeout: 2500});
+        let response = await axios.get(`http://${this.config.ip}:2606/games`, {timeout: 30000});
+        if (response.status != 200) {
+          this.error = true;
           this.loading = false;
           return;
         }
@@ -591,62 +866,75 @@ export default {
         this.games = this.games.map((game) => {
           return {
             ...game,
-            search: game.name.toLowerCase().replace(/\W/g, ""),
-          }
+            search: game.Name.toLowerCase().replace(/\W/g, ""),
+            poster: game.poster.replace(
+              "${backend}",
+              "http://" + this.config.ip + ":2606"
+            ),
+          };
         });
+        this.filters = [];
+        for (let game of this.games) {
+          if (!this.filters.includes(game.provider)) {
+            this.filters.push(game.provider);
+          }
+        }
+        this.filters.sort();
+        if (this.filter.length == 0) {
+          this.filter = this.filters;
+        }
         this.filteredGames = [...this.games];
         this.filteredGames.sort((a, b) => {
           let aName = a.search;
           let bName = b.search;
 
-          if(aName < bName)
-          {
+          if (aName < bName) {
             return -1;
           }
-          if(bName < aName)
-          {
+          if (bName < aName) {
             return 1;
           }
           return 0;
         });
-      }
-      catch(ex)
-      {
+        this.error = false;
+      } catch (ex) {
         this.error = true;
+        console.error(ex);
       }
       this.loading = false;
     },
 
-    async refresh()
-    {
-      this.loading = true;
-      let response = await axios.post(`http://${this.config.ip}:2606/refresh`);
+    async refresh() {
       this.load();
     },
 
-    async launchGame(game)
-    {
+    async launchGame(game) {
+      let authenticate = await axios.get(`http://${this.config.ip}:2606/authenticate`, {timeout: 2500});
       let response = await axios.post(`http://${this.config.ip}:2606/launch`, game);
       console.log(response.data);
 
       this.launchDesktop();
     },
 
-    launchDesktop()
-    {
+    async launchPlaynite() {
+      let response = await axios.post(
+        `http://${this.config.ip}:2606/launchPlaynite/${
+          this.config.playniteMode || "desktop"
+        }`
+      );
+
+      this.launchDesktop();
+    },
+
+    launchDesktop() {
       let args = [];
       let moonlightargs = this.config.moonlight;
       Object.keys(this.config.moonlight).forEach((key) => {
-        if(moonlightargs[key] === true)
-        {
+        if (moonlightargs[key] === true) {
           args.push("--" + key);
-        }
-        else if(moonlightargs[key] === false)
-        {
+        } else if (moonlightargs[key] === false) {
           args.push("--no-" + key);
-        }
-        else
-        {
+        } else {
           args.push("--" + key);
           args.push(moonlightargs[key]);
         }
@@ -656,119 +944,373 @@ export default {
       args.push(this.config.ip);
       args.push(this.config.appName);
 
-      execFile(this.config.moonlightExe, args, (error,stdout,stdin) => {
+      execFile(this.config.moonlightExe, args, (error, stdout, stdin) => {
         console.log(error);
-        if(error)
-        {
+        if (error) {
           this.spawnError = true;
           this.spawnErrorData = error;
         }
       });
-    }
+
+      ipcRenderer.send("hideWindow");
+    },
+
+    handleConnect(e) {
+      this.controllerConnected = true;
+      e.gamepad.addEventListener("buttonpress", (e) => {
+        switch (e.index) {
+          case StandardMapping.Button.D_PAD_LEFT:
+            this.changeSelected(-1);
+            break;
+          case StandardMapping.Button.D_PAD_RIGHT:
+            this.changeSelected(1);
+            break;
+          case StandardMapping.Button.D_PAD_UP:
+            this.changeSelected(-this.config.columns);
+            break;
+          case StandardMapping.Button.D_PAD_BOTTOM:
+            this.changeSelected(this.config.columns);
+            break;
+          case StandardMapping.Button.BUTTON_BOTTOM:
+            this.launchGame(this.currentGame);
+            break;
+        }
+      });
+    },
+
+    handleDisconnect(e) {
+      this.controllerConnected = false;
+    },
+
+    async toggleMic() {
+      console.log(this.micEnabled);
+      if (this.micEnabled) {
+        this.micEnabled = false;
+        ipcRenderer.send("endRecord");
+        return;
+      }
+
+      if (this.config.chosenMic == -1) {
+        return;
+      }
+
+      this.micEnabled = true;
+
+      let device = naudiodon.getDevices().filter((device) => {
+        console.log(device.id, this.config.chosenMic);
+        return device.id == this.config.chosenMic;
+      })[0];
+
+      ipcRenderer.send("startRecord", { device, ip: this.config.ip });
+    },
+
+    async snooze(amount)
+    {
+      ipcRenderer.send('sendSnoozeRequest', amount);
+      ipcRenderer.once('snoozeRequestSent', (event, data) => {
+        this.$notify({group: 'global', type: 'success', title: 'Snooze Request Sent', text: `The snooze request has been sent, your auto-shutdown timer has been extended by ${amount} minutes.`});
+      });
+    },
+
+    async powerOn()
+    {
+      ipcRenderer.send('sendPowerRequest', 'start');
+      ipcRenderer.once('powerRequestSent', (event, data) => {
+        this.$notify({group: 'global', type: 'success', title: 'Start Request Sent', text: 'A start request has been sent. Please wait 30 seconds for your machine to start.'});
+      });
+    },
+
+    async powerRestart()
+    {
+      if(await this.$confirm("Are you sure you wish to restart your machine?"))
+      {
+        ipcRenderer.send('sendPowerRequest', 'restart');
+        ipcRenderer.once('powerRequestSent', (event, data) => {
+          this.$notify({group: 'global', type: 'success', title: 'Restart Request Sent', text: 'A restart request has been sent. Please wait a couple of minutes for your machine to restart.'});
+        });
+      }
+    },
+
+    async powerOff()
+    {
+      if(await this.$confirm("Are you sure you wish to shutdown your machine?"))
+      {
+        ipcRenderer.send('sendPowerRequest', 'shutdown');
+        ipcRenderer.once('powerRequestSent', (event, data) => {
+          this.$notify({group: 'global', type: 'success', title: 'Shutdown Request Sent', text: 'A shutdown request has been sent. Please wait a couple of minutes for your machine to shutdown.'});
+        });
+      }
+    },
+
+    async powerKill()
+    {
+      if(await this.$confirm("Are you sure you wish to force kill your machine? This can lead to data loss and corruption. Please only do this if your machine is completely inaccessible, and the regular shutdown option isn't working."))
+      {
+        ipcRenderer.send('sendForceShutdown');
+        ipcRenderer.once('forceShutdownSent', (event, data) => {
+          this.$notify({group: 'global', type: 'success', title: 'Force Shutdown Request Sent', text: 'A force shutdown request has been sent. Please wait a minute for your machine to be killed.'});
+        });
+      }
+    },
+
+    // async sendRequest(url) {
+    //   let response;
+    //   try
+    //   {
+    //     response = await this.sendCORSRequest("GET", url);
+    //   }
+    //   catch(ex)
+    //   {
+    //     await this.login();
+    //     response = await this.sendCORSRequest("GET", url);
+    //   }
+    //   return response;
+    // },
+
+    // async login() {
+      // let url = 'https://login.maximumsettings.com/';
+      
+      // let data = qs.stringify({
+      //   login_username: this.config.mxs.username,
+      //   login_password: this.config.mxs.password,
+      //   submit: "Login"
+      // });
+
+      // try {
+      //   let response = await this.sendCORSRequest("POST", url, data, {
+      //     withCredentials: true,
+      //     headers: {
+      //       'content-type': 'application/x-www-form-urlencoded',
+      //     }
+      //   });
+      //   this.$notify({group: 'global', type: 'success', title: 'Successfully Logged In', text: 'Logged into Maximum Settings successfully.'});
+      //   return response;
+      // }
+      // catch(ex)
+      // {
+      //   this.$notify({group: 'global', type: 'error', title: 'Error Logging In', text: 'Failed to login! Please ensure you have set your credentials correctly in the settings.'});
+      //   return {};
+      // }
+    // },
+
+    // async sendCORSRequest(method, url, data, config) {
+    //   let id = uuid();
+    //   return new Promise((resolve, reject) => {
+    //     ipcRenderer.send('sendRequest', {
+    //       id,
+    //       url,
+    //       method,
+    //       data,
+    //       config: config || {
+    //         withCredentials: true
+    //       }
+    //     });
+
+    //     ipcRenderer.once('response' + id, (event, data) => {
+    //       if(data.error)
+    //       {
+    //         return reject();
+    //       }
+    //       if(data.includes('<input type="checkbox" id="checkbox"><label for="checkbox">Keep me logged in</label>'))
+    //       {
+    //         return reject();
+    //       }
+    //       resolve(data);
+    //     });
+    //   });
+    // },
   },
 
   watch: {
-    async search(value)
-    {
+    async search(value) {
       this.changeSearch(value);
     },
+    async filter(value) {
+      this.handleFilterChange(value);
+    },
 
-    config:{
-      handler(value)
-      {
+    config: {
+      handler(value) {
         this.setConfig(value);
       },
       deep: true,
-    }
-  }
-}
+    },
+
+    status: {
+      async handler(value, oldValue) {
+        if(value.status == 'running' && oldValue.status == 'stopped')
+        {
+          this.$notify({group: 'global', type: 'success', title: 'Machine Started', text: 'Your machine has now started! We will now attempt to re-connect.'});
+          
+          let times = 0;
+          while(times < 25)
+          {
+            console.log("Loading " + times);
+            await this.load();
+            if(!this.error)
+            {
+              return;
+            }
+            times++;
+          }
+        }
+        else if(value.status == 'stopped' && oldValue.status != 'stopped')
+        {
+          this.$notify({group: 'global', type: 'error', title: 'Machine Stopped', text: 'Your machine is not running. Please start it to connect.'});
+          this.error = "Machine Stopped.";
+        }
+      }
+    },
+
+    selected(value, oldValue) {
+      const card = this.$refs["game-" + value][0];
+      if (card) {
+        this.currentGame = card.game;
+        const inView = card.inView;
+        if (!inView) {
+          if (value > oldValue) {
+            card.$el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          } else {
+            card.$el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        }
+      }
+    },
+  },
+};
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Righteous&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Righteous&display=swap");
 
-  .v-toolbar__content {
-    padding-right: 0px !important;
-  }
-  ::-webkit-scrollbar {
-    width: 0.35vw;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    border-radius: 10px;
-    background: rgba(255,255,255,0);
-  }
-  ::-webkit-scrollbar-track:hover {
-    background: rgba(255,255,255,0.1)
-  }
-  ::-webkit-scrollbar-thumb{
-    border-radius: 10px;
-    background: rgba(255,255,255,0.2);
-  }
-  ::-webkit-scrollbar-thumb:hover{
-    width: 20px;
-    background: rgba(255,255,255,0.4);
-  }
-  ::-webkit-scrollbar-thumb:active{
-    width: 20px;
-    background: rgba(255,255,255,0.8);
-  }
+.v-toolbar__content {
+  padding-right: 0px !important;
+}
+::-webkit-scrollbar {
+  width: 0.35vw;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0);
+}
+::-webkit-scrollbar-track:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  width: 20px;
+  background: rgba(255, 255, 255, 0.4);
+}
+::-webkit-scrollbar-thumb:active {
+  width: 20px;
+  background: rgba(255, 255, 255, 0.8);
+}
 
-  .windowButton {
-    width: 12.5px !important;
-    height: 12.5px !important;
-    border-radius: 100% !important;
-  }
+.windowButton {
+  width: 12.5px !important;
+  height: 12.5px !important;
+  border-radius: 100% !important;
+}
 
-  .v-application .shimmerText.text-h5 {
-    background: radial-gradient(ellipse at top right, #fff 0%, #fff 25%, silver 50%, #fff 75%, #fff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
-    background-size: 400% 400%;
+.v-application .shimmerText.text-h5 {
+  background: radial-gradient(
+    ellipse at top right,
+    #fff 0%,
+    #fff 25%,
+    silver 50%,
+    #fff 75%,
+    #fff 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  background-size: 400% 400%;
+  background-position: bottom left;
+
+  animation-duration: 4s;
+  animation-name: shimmer;
+  animation-iteration-count: infinite;
+
+  font-family: "Righteous" !important;
+}
+
+@keyframes shimmer {
+  0% {
     background-position: bottom left;
+  }
+  100% {
+    background-position: top right;
+  }
+}
 
-    animation-duration: 4s;
-    animation-name: shimmer;
-    animation-iteration-count: infinite;
+.game {
+  cursor: pointer;
+  padding: 2px;
+}
+.game .v-image {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+.provider {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-bottom: 4px;
+  padding-left: 4px;
+  padding-top: 2px;
+  padding-right: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom-left-radius: 4px;
+}
+.installed {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding-bottom: 2px;
+  padding-left: 4px;
+  padding-top: 4px;
+  padding-right: 2px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top-left-radius: 4px;
+}
 
-    font-family: 'Righteous' !important;
-  }
-  
-  @keyframes shimmer
-  {
-    0% {
-      background-position: bottom left;
-    }
-    100% {
-      background-position: top right;
-    }
-  }
+.description img {
+  max-width: 100% !important;
+}
 
-  .game {
-    cursor: pointer;
-  }
-  .provider {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding-bottom: 4px;
-    padding-left: 4px;
-    padding-top: 2px;
-    padding-right: 2px;
-    background: rgba(0,0,0,0.5);
-    border-bottom-left-radius: 4px;
-  }
-  .installed {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding-bottom: 2px;
-    padding-left: 4px;
-    padding-top: 4px;
-    padding-right: 2px;
-    background: rgba(0,0,0,0.5);
-    border-top-left-radius: 4px;
-  }
+.description video {
+  max-width: 100% !important;
+}
+
+.maximumsettingsalt .v-app-bar .v-btn .v-icon {
+  color: #444 !important;
+}
+
+.maximumsettingsalt .v-application .shimmerText.text-h5 {
+  background: radial-gradient(
+    ellipse at top right,
+    #444 0%,
+    #444 25%,
+    rgb(200, 200, 200) 50%,
+    #444 75%,
+    #444 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  background-size: 400% 400%;
+  background-position: bottom left;
+
+  animation-duration: 4s;
+  animation-name: shimmer;
+  animation-iteration-count: infinite;
+
+  font-family: "Righteous" !important;
+}
 </style>
