@@ -31,6 +31,8 @@ protocol.registerSchemesAsPrivileged([
 //Create a reference to the Maxmimum Settings panel frame.
 let mxsWin;
 
+let hiding = false;
+
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
@@ -59,7 +61,12 @@ function createWindow() {
   }
 
   win.on('closed', () => {
-    win = null
+    console.log("Closed.");
+    if(!hiding)
+    {
+      app.quit();
+      win = null;
+    }
   })
   
   win.webContents.on('did-frame-navigate', (event, url, httpResponseCode, httpStatusText, isMainFrame, frameProcessId, frameRoutingId) => {
@@ -164,9 +171,9 @@ function startMxsWindow() {
           let loginScript = `
             let loginInterval = setInterval(() => {
               let error = document.querySelector('#login_box > .content > .alert');
-              if(error && error.innerTxt)
+              if(error && error.innerText)
               {
-
+                return;
               }
               let username = document.querySelector('[name=login_username]');
               let password = document.querySelector('[name=login_password]');
@@ -233,9 +240,30 @@ let micStream, micChunker, micSocket;
 
 let interval = null
 
+ipcMain.on('close', (event, data) => {
+  console.log("Close called.");
+  if(win) {
+    win.destroy();
+  }
+  if(mxsWin) {
+    mxsWin.destroy();
+  }
+
+  app.quit();
+});
+
 ipcMain.on('hideWindow', (event, data) => {
   console.log("Hide Window Called!");
-  win.hide();
+  hiding = true;
+  let oldWin = win;
+
+  win = new BrowserWindow({show: false, paintWhenInitiallyHidden: false});
+
+  oldWin.destroy();
+  if(mxsWin)
+  {
+    mxsWin.destroy();
+  }
 
   setTimeout(() => {
     if (interval != null) {
@@ -257,8 +285,13 @@ ipcMain.on('hideWindow', (event, data) => {
 
       console.log("Moonlight not found, creating window.");
 
-      win.show();
+      oldWin = win;
+
+      hiding = false;
+      createWindow();
       win.focus();
+
+      oldWin.destroy();
     }, 5000);
   }, 5000);
 })
@@ -463,13 +496,15 @@ ipcMain.on('getStatus', async(event, data) => {
 });
 
 // Quit when all windows are closed.
-app.on('window-all-closed', () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
+// app.on('window-all-closed', () => {
+//   // On macOS it is common for applications and their menu bar
+//   // to stay active until the user quits explicitly with Cmd + Q
+//   if (process.platform !== 'darwin') {
+//     app.quit()
+//   }
+// })
+
+
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the

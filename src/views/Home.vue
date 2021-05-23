@@ -605,6 +605,10 @@ export default {
         axios.defaults.headers.common["Authorization"] = value.authorization;
 
         this.handleResize();
+
+        this.statusInterval = setInterval(() => {
+          ipcRenderer.send('getStatus');
+        }, 1000);
       }, 1500),
 
       changeBitrate: debounce(function (value) {
@@ -751,21 +755,19 @@ export default {
     setInterval(() => {
       this.handleResize();
     }, 5000);
+    
 
-    setInterval(() => {
+    this.statusInterval = setInterval(() => {
       ipcRenderer.send('getStatus');
-      ipcRenderer.once('sendStatus', (event, data) => {
-        this.status = data;
-        console.log(data);
-      });
     }, 1000);
     ipcRenderer.send('getStatus');
-    ipcRenderer.once('sendStatus', (event, data) => {
+    ipcRenderer.on('sendStatus', (event, data) => {
       this.status = data;
       console.log(data);
     });
 
     ipcRenderer.on('notLoggedIn', (event, data) => {
+      clearInterval(this.statusInterval);
       if(this.mxs)
       {
         this.$notify({group: 'global', type: 'error', title: 'Not Logged In', text: 'You are not logged in to Maxmimum Settings. Please ensure you have entered your username and password correctly in the settings.'});
@@ -785,7 +787,7 @@ export default {
       this.$router.push('/panel');
     },
     close() {
-      window.close();
+      ipcRenderer.send("close");
     },
     maximise() {
       if (!window.isMaximized()) {
