@@ -456,7 +456,6 @@ const util = require("util");
 const naudiodon = require("naudiodon");
 
 const exec = util.promisify(require("child_process").exec);
-const execFile = require("child_process").execFile;
 
 const remote = require("electron").remote;
 const { ipcRenderer } = require("electron");
@@ -852,10 +851,13 @@ export default {
       let height = element.clientHeight;
       this.minHeight = height;
     },
-    async load() {
+    async load(keepLoading) {
       axios.defaults.timeout = 2500;
       axios.defaults.headers.common["Authorization"] = this.config.authorization;
-      this.loading = true;
+      if(!this.loading)
+      {
+        this.loading = true;
+      }
       try {
         let authenticate = await axios.get(`http://${this.config.ip}:2606/authenticate`, {timeout: 2500});
         let response = await axios.get(`http://${this.config.ip}:2606/games`, {timeout: 30000});
@@ -899,11 +901,15 @@ export default {
           return 0;
         });
         this.error = false;
+        this.loading = false;
       } catch (ex) {
         this.error = true;
         console.error(ex);
       }
-      this.loading = false;
+      if(!keepLoading)
+      {
+        this.loading = false;
+      }
     },
 
     async refresh() {
@@ -922,36 +928,17 @@ export default {
       let response = await axios.post(
         `http://${this.config.ip}:2606/launchPlaynite/${
           this.config.playniteMode || "desktop"
-        }`
+        }`,
       );
 
       this.launchDesktop();
     },
 
     launchDesktop() {
-      let args = [];
-      let moonlightargs = this.config.moonlight;
-      Object.keys(this.config.moonlight).forEach((key) => {
-        if (moonlightargs[key] === true) {
-          args.push("--" + key);
-        } else if (moonlightargs[key] === false) {
-          args.push("--no-" + key);
-        } else {
-          args.push("--" + key);
-          args.push(moonlightargs[key]);
-        }
-      });
-
-      args.push("stream");
-      args.push(this.config.ip);
-      args.push(this.config.appName);
-
-      execFile(this.config.moonlightExe, args, (error, stdout, stdin) => {
-        console.log(error);
-        if (error) {
-          this.spawnError = true;
-          this.spawnErrorData = error;
-        }
+      ipcRenderer.send("spawnMoonlight", this.config.moonlight);
+      ipcRenderer.once('spawnError', (event, data) => {
+        this.spawnError = true;
+        this.spawnErrorData = data;
       });
 
       ipcRenderer.send("hideWindow");
@@ -1148,7 +1135,7 @@ export default {
           while(times < 25)
           {
             console.log("Loading " + times);
-            await this.load();
+            await this.load(true);
             if(!this.error)
             {
               return;

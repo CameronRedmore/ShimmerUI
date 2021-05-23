@@ -5,7 +5,7 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import path from 'path';
 
-import axios from 'axios';
+const execFile = require("child_process").execFile;
 
 const psList = require('ps-list');
 
@@ -250,6 +250,33 @@ ipcMain.on('close', (event, data) => {
   }
 
   app.quit();
+});
+
+ipcMain.on('spawnMoonlight', (event, data) => {
+  let args = [];
+  let config = storage.getSync("config");
+  let moonlightargs = config.moonlight;
+  Object.keys(config.moonlight).forEach((key) => {
+    if (moonlightargs[key] === true) {
+      args.push("--" + key);
+    } else if (moonlightargs[key] === false) {
+      args.push("--no-" + key);
+    } else {
+      args.push("--" + key);
+      args.push(moonlightargs[key]);
+    }
+  });
+
+  args.push("stream");
+  args.push(config.ip);
+  args.push(config.appName);
+
+  execFile(config.moonlightExe, args, (error, stdout, stdin) => {
+    console.log(error);
+    if (error) {
+      event.reply('spawnError', error);
+    }
+  });
 });
 
 ipcMain.on('hideWindow', (event, data) => {
